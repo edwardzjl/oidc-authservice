@@ -282,6 +282,8 @@ func (s *server) callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger.Infof("TESTING: The logged in user has received the tokens:%v",oauth2Tokens)
+
 	rawIDToken, ok := oauth2Tokens.Extra("id_token").(string)
 	if !ok {
 		logger.Error("No id_token field available.")
