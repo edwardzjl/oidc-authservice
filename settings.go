@@ -65,9 +65,9 @@ type config struct {
 	CacheExpirationMinutes int  `split_words:"true" default:"5" envconfig:"CACHE_EXPIRATION_MINUTES"`
 
 	// Authenticators configurations
-	IDTokenAuthnEnabled    bool `split_words:"true" default:"true" envconfig:"IDTOKEN_AUTHN_ENABLED"`
-	JWTAuthnEnabled        bool `split_words:"true" default:"true" envconfig:"JWT_AUTHN_ENABLED"`
-	KubernetesAuthnEnabled bool `split_words:"true" default:"true" envconfig:"KUBERNETES_AUTHN_ENABLED"`
+	IDTokenAuthnEnabled    bool   `split_words:"true" default:"true" envconfig:"IDTOKEN_AUTHN_ENABLED"`
+	KubernetesAuthnEnabled bool   `split_words:"true" default:"true" envconfig:"KUBERNETES_AUTHN_ENABLED"`
+	AccessTokenAuthn       string `split_words:"true" default:"JWT" envconfig:"ACCESS_TOKEN_AUTHN"`
 
 	// Authorization
 	GroupsAllowlist []string `split_words:"true" default:"*"`
@@ -136,4 +136,19 @@ func ensureInSlice(elem string, slice []string) []string {
 	}
 	slice = append([]string{elem}, slice...)
 	return slice
+}
+
+// validAccessTokenAuthn() examines if the admins have configured
+// a valid value for the ACCESS_TOKEN_AUTHN envvar.
+func validAccessTokenAuthn(AccessTokenAuthnEnv string) (bool){
+	if AccessTokenAuthnEnv == "JWT" {
+		return true
+	}
+	if AccessTokenAuthnEnv == "opaque"{
+		return true
+	}
+	if AccessTokenAuthnEnv == "none" {
+		return true
+	}
+	return false
 }

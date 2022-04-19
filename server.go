@@ -63,8 +63,8 @@ type server struct {
 
 	// Authenticators Configurations
 	IDTokenAuthnEnabled    bool
-	JWTAuthnEnabled        bool
 	KubernetesAuthnEnabled bool
+	AccessTokenAuthn       string
 
 	authHeader              string
 	idTokenOpts             jwtClaimOpts
@@ -370,9 +370,12 @@ func (s *server) enabledAuthenticator(authenticator string) (bool){
 	if authenticator == "idtoken authenticator" && s.IDTokenAuthnEnabled {
 		return true
 	}
-	if authenticator == "JWT access token authenticator" && s.JWTAuthnEnabled {
+	if authenticator == "JWT access token authenticator" && s.AccessTokenAuthn == "JWT" {
 		return true
 	}
+	if authenticator == "opaque access token authenticator" && s.AccessTokenAuthn == "opaque" {
+		return true
+	}	
 	if authenticator == "kubernetes authenticator" && s.KubernetesAuthnEnabled {
 		return true
 	}

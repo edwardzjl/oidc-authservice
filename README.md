@@ -133,8 +133,8 @@ By default, OIDC AuthService attempts to authenticate client requests with each 
 | Setting | Default | Description |
 | - | - | - |
 | `IDTOKEN_AUTHN_ENABLED` | `true` | Set `IDTOKEN_AUTHN_ENABLED` to `false` to disable the ID token authentication method. |
-| `JWT_AUTHN_ENABLED` | `true` | Set `JWT_AUTHN_ENABLED` to `false` to disable the JWT access token authentication method. |
 | `KUBERNETES_AUTHN_ENABLED` | `true` | Set `Kubernetes_AUTHN_ENABLED` to `false` to disable the Kubernetes authentication method. |
+| `ACCESS_TOKEN_AUTHN` | "JWT" | Set `ACCESS_TOKEN_AUTHN` to either "JWT" to enable the JWT access token authentication method, or "opaque" to enable the opaque access token authentication method, or to "none" to disable both access token authentication method. Note the only one of the two access token authentication methods can be used (default: "JWT") |
 
 OIDC AuthService can also perform basic authorization checks. The following
 settings are related to authorization:

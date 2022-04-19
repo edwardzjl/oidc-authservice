@@ -34,6 +34,16 @@ func main() {
 	}
 	log.Infof("Config: %+v", c)
 
+	if !validAccessTokenAuthn(c.AccessTokenAuthn){
+		log.Errorf("Unsupported access token authentication configuration:" +
+				   "ACCESS_TOKEN_AUTHN=%v",c.AccessTokenAuthn)
+		log.Info("Please select exactly one of the supported options:\n" +
+		         "- JWT: to enable the JWT access token authentication method\n" +
+				 "- opaque: to enable the opaque access token authentication method\n" +
+				 "- none: to disable the authentication of access tokens\n" +
+				 "AuthService will proceed with the default configuration: JWT authentication method enabled.")
+		c.AccessTokenAuthn = "JWT"
+	}
 	// Start readiness probe immediately
 	log.Infof("Starting readiness probe at %v", c.ReadinessProbePort)
 	isReady := abool.New()
@@ -215,8 +225,8 @@ func main() {
 		cacheEnabled:            c.CacheEnabled,
 		cacheExpirationMinutes:  c.CacheExpirationMinutes,
 		IDTokenAuthnEnabled:     c.IDTokenAuthnEnabled,
-		JWTAuthnEnabled:         c.JWTAuthnEnabled,
 		KubernetesAuthnEnabled:  c.KubernetesAuthnEnabled,
+		AccessTokenAuthn:        c.AccessTokenAuthn,
 		authHeader:              c.AuthHeader,
 		caBundle:                caBundle,
 		authenticators: []authenticator.Request{
