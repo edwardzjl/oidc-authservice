@@ -34,6 +34,10 @@ func main() {
 	}
 	log.Infof("Config: %+v", c)
 
+	if !validAccessTokenAuthn(c.AccessTokenAuthnEnabled, c.AccessTokenAuthn){
+		log.Fatalf("Unsupported access token authentication configuration:" +
+				   "ACCESS_TOKEN_AUTHN=%s",c.AccessTokenAuthn)
+	}
 	// Start readiness probe immediately
 	log.Infof("Starting readiness probe at %v", c.ReadinessProbePort)
 	isReady := abool.New()
@@ -215,8 +219,9 @@ func main() {
 		cacheEnabled:            c.CacheEnabled,
 		cacheExpirationMinutes:  c.CacheExpirationMinutes,
 		IDTokenAuthnEnabled:     c.IDTokenAuthnEnabled,
-		JWTAuthnEnabled:         c.JWTAuthnEnabled,
 		KubernetesAuthnEnabled:  c.KubernetesAuthnEnabled,
+		AccessTokenAuthnEnabled: c.AccessTokenAuthnEnabled,
+		AccessTokenAuthn:        c.AccessTokenAuthn,
 		authHeader:              c.AuthHeader,
 		caBundle:                caBundle,
 		authenticators: []authenticator.Request{
