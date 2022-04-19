@@ -31,7 +31,8 @@ var (
 		0: "session authenticator",
 		1: "idtoken authenticator",
 		2: "JWT access token authenticator",
-		3: "kubernetes authenticator",
+		3: "opaque access token authenticator",
+		4: "kubernetes authenticator",
 	}
 )
 
@@ -140,7 +141,7 @@ func (s *server) authenticate(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// If AuthService encountered an authenticator-specific error,
-// then no other authentication methods will be tested.
+			// then no other authentication methods will be tested.
 			var authnError *authenticatorSpecificError
 			if errors.As(err, &authnError) {
 				returnMessage(w, http.StatusUnauthorized, authnError.Error())
