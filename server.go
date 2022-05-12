@@ -284,6 +284,9 @@ func (s *server) callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// ATHAMARK
+	logger.Infof("The received oauth2 tokens are: %v", oauth2Tokens)
+
 	rawIDToken, ok := oauth2Tokens.Extra("id_token").(string)
 	if !ok {
 		logger.Error("No id_token field available.")
