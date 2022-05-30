@@ -92,7 +92,10 @@ func parseConfig() (*config, error) {
 	if len(c.AfterLogoutURL.String()) == 0 {
 		c.AfterLogoutURL = resolvePathReference(c.AuthserviceURLPrefix, AfterLogoutPath)
 	}
-
+	if !validAccessTokenAuthn(c.AccessTokenAuthnEnabled, c.AccessTokenAuthn){
+		log.Fatalf("Unsupported access token authentication configuration:" +
+			"ACCESS_TOKEN_AUTHN=%s",c.AccessTokenAuthn)
+	}
 	c.UserTemplateContext = getEnvsFromPrefix("TEMPLATE_CONTEXT_")
 
 	c.SkipAuthURLs = trimSpaceFromStringSliceElements(c.SkipAuthURLs)

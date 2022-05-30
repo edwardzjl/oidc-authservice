@@ -34,10 +34,6 @@ func main() {
 	}
 	log.Infof("Config: %+v", c)
 
-	if !validAccessTokenAuthn(c.AccessTokenAuthnEnabled, c.AccessTokenAuthn){
-		log.Fatalf("Unsupported access token authentication configuration:" +
-				   "ACCESS_TOKEN_AUTHN=%s",c.AccessTokenAuthn)
-	}
 	// Start readiness probe immediately
 	log.Infof("Starting readiness probe at %v", c.ReadinessProbePort)
 	isReady := abool.New()
