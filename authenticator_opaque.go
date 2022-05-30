@@ -99,7 +99,7 @@ func (s *opaqueTokenAuthenticator) retrieveUserIDGroupsClaims(claims map[string]
 
 // The Opaque Access Token Authenticator implements the Cacheable
 // interface with the getCacheKey().
-func (o *opaqueTokenAuthenticator) getCacheKey(r *http.Request) (string) {
+func (s *opaqueTokenAuthenticator) getCacheKey(r *http.Request) (string) {
 	return getBearerToken(r.Header.Get("Authorization"))
 
 }
