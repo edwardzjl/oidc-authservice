@@ -42,14 +42,8 @@ func (s *opaqueTokenAuthenticator) AuthenticateRequest(r *http.Request) (*authen
 		if !errors.As(err, &reqErr) {
 			return nil, false, errors.Wrap(err, "UserInfo request failed unexpectedly")
 		}
-		if reqErr.Response.StatusCode != http.StatusUnauthorized {
-			return nil, false, errors.Wrapf(err, "UserInfo request with unexpected code '%d'", reqErr.Response.StatusCode)
-		}
-		// Access token has expired
-		logger.Info("Opaque token has expired")
-		opaqueErr := errors.Wrap(err,"Opaque token has expired")
 
-		return nil, false, &authenticatorSpecificError{Err: opaqueErr}
+		return nil, false, errors.Wrapf(err, "UserInfo request failed with code '%d'", reqErr.Response.StatusCode)
 	}
 
 	// Retrieve the USERID_CLAIM and the GROUPS_CLAIM
