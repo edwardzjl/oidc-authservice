@@ -208,6 +208,12 @@ func (s *server) authenticate(w http.ResponseWriter, r *http.Request) {
 	for k, v := range userInfoToHeaders(userInfo, &s.upstreamHTTPHeaderOpts, &s.userIdTransformer) {
 		w.Header().Set(k, v)
 	}
+
+	bearer := getBearerToken(r.Header.Get(s.authHeader))
+	if len(bearer) > 0 {
+		w.Header().Set(s.authHeader, bearer) 
+	}
+	
 	w.WriteHeader(http.StatusOK)
 	return
 }
