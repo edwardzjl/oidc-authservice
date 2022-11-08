@@ -255,6 +255,23 @@ func (s *server) callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check current session
+	if session, err := s.store.Get(r, userSessionCookie); err != nil {
+		logger.Errorf("Failed to get session: %v", err)
+	} else if !session.IsNew {
+		// session already exists, which means the user already logged in
+		destination := ""
+		if s.afterLoginRedirectURL != "" {
+			// Redirect to a predefined url from config.
+			afterLoginRedirectURL := mustParseURL(s.afterLoginRedirectURL)
+			destination = afterLoginRedirectURL.String()
+		}
+		logger.WithField("redirectTo", destination).
+		Info("User already logged in, redirecting.")
+		http.Redirect(w, r, destination, http.StatusFound)
+		return
+	}
+
 	// Get state and:
 	// 1. Confirm it exists in our memory.
 	// 2. Get the original URL associated with it.
