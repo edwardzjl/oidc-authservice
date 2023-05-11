@@ -47,6 +47,7 @@ type server struct {
 	homepageURL             string
 	afterLogoutRedirectURL  string
 	verifyAuthURL           string
+	sessionDomain           string
 	sessionMaxAgeSeconds    int
 	strictSessionValidation bool
 
@@ -308,7 +309,7 @@ func (s *server) authCodeFlowAuthenticationRequest(w http.ResponseWriter, r *htt
 	logger := common.RequestLogger(r, logModuleInfo)
 
 	// Initiate OIDC Flow with Authorization Request.
-	state, err := sessions.CreateState(r, w, s.oidcStateStore)
+	state, err := sessions.CreateState(r, w, s.oidcStateStore, s.sessionDomain)
 	if err != nil {
 		logger.Errorf("Failed to save state in store: %v", err)
 		common.ReturnMessage(w, http.StatusInternalServerError, "Failed to save state in store.")
@@ -398,6 +399,9 @@ func (s *server) callback(w http.ResponseWriter, r *http.Request) {
 	session := sessions.NewSession(s.store, sessions.UserSessionCookie)
 	session.Options.MaxAge = s.sessionMaxAgeSeconds
 	session.Options.Path = "/"
+	if len(s.sessionDomain) > 0 {
+		session.Options.Domain = s.sessionDomain
+	}
 	// Extra layer of CSRF protection
 	session.Options.SameSite = s.sessionSameSite
 

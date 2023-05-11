@@ -51,6 +51,9 @@ func main() {
 
 	// Register handlers for routes
 	router := mux.NewRouter()
+
+	router.Use(handlers.ProxyHeaders)
+
 	router.HandleFunc(c.RedirectURL.Path, s.callback).Methods(http.MethodGet)
 	router.HandleFunc(path.Join(c.AuthserviceURLPrefix.Path, SessionLogoutPath), s.logout).Methods(http.MethodPost)
 
@@ -217,6 +220,7 @@ func main() {
 			AuthMethodHeader: c.AuthMethodHeader,
 		},
 		userIdTransformer:       c.UserIDTransformer,
+		sessionDomain: 		     c.SessionDomain,
 		sessionMaxAgeSeconds:    c.SessionMaxAge,
 		strictSessionValidation: c.StrictSessionValidation,
 		cacheEnabled:            c.CacheEnabled,

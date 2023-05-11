@@ -6,10 +6,13 @@ import (
 	"encoding/gob"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gorilla/sessions"
 	"github.com/pkg/errors"
+
+	"github.com/arrikto/oidc-authservice/common"
 )
 
 const (
@@ -38,19 +41,22 @@ func newState(firstVisitedURL string) *State {
 // It returns the session key, which can be used as the state value to start
 // an OIDC authentication request.
 func CreateState(r *http.Request, w http.ResponseWriter,
-	store sessions.Store) (string, error) {
+	store sessions.Store, sessionDomain string) (string, error) {
+	logger := common.RequestLogger(r, "state")
 
-	firstVisitedURL, err := url.Parse("")
+	firstVisitedURL, err := resolveRequestURL(r)
 	if err != nil {
 		return "", errors.Wrap(err, "Failed to initialize empty URL")
 	}
-	firstVisitedURL.Path = r.URL.Path
-	firstVisitedURL.RawPath = r.URL.RawPath
-	firstVisitedURL.RawQuery = r.URL.RawQuery
+	logger.Info("Creating state for first visited URL: ", firstVisitedURL.String())
+
 	s := newState(firstVisitedURL.String())
 	session := sessions.NewSession(store, oidcStateCookie)
 	session.Options.MaxAge = int(20 * time.Minute)
 	session.Options.Path = "/"
+	if len(sessionDomain) > 0 {
+		session.Options.Domain = sessionDomain
+	}
 	session.Values[sessionValueState] = *s
 
 	err = session.Save(r, w)
@@ -67,6 +73,63 @@ func CreateState(r *http.Request, w http.ResponseWriter,
 	}
 	return c.Value, nil
 }
+
+// If request contains X-Forwarded-*, the first one is used
+// If request contains Forwarded header, the left-most value is used
+// If no such header is found, the URL will be treated as relative.
+func resolveRequestURL(r *http.Request) (*url.URL, error) {
+	firstVisitedURL, err := url.Parse("")
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to initialize empty URL")
+	}
+
+	scheme := r.URL.Scheme
+	if len(scheme) == 0 {
+		// If you are properly configured, and the scheme is empty, it means that you are not running behind a proxy,
+		// which means you cannot serve multiple hostnames, and relative redirecting should be fine.
+		firstVisitedURL.Path = r.URL.Path
+		firstVisitedURL.RawPath = r.URL.RawPath
+		firstVisitedURL.RawQuery = r.URL.RawQuery
+		return firstVisitedURL, nil
+	}
+	firstVisitedURL.Scheme = scheme
+
+	// could be 'host' or 'host:port'
+	firstVisitedURL.Host = r.Host
+
+	forwarded := r.Header.Get("Forwarded")
+	fst := strings.Split(forwarded, ",")[0]
+	entries := strings.Split(fst, ";")
+	m := make(map[string]string)
+	for _, e := range entries {
+		parts := strings.Split(e, "=")
+		m[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+	}
+	port := m["port"]
+
+	if len(port) > 0 {
+		if port == "80" && firstVisitedURL.Scheme == "http" {
+			if firstVisitedURL.Port() != "" {
+				firstVisitedURL.Host = firstVisitedURL.Hostname()
+			}
+		} else if port == "443" && firstVisitedURL.Scheme == "https" {
+			if firstVisitedURL.Port() != "" {
+				firstVisitedURL.Host = firstVisitedURL.Hostname()
+			}
+		} else {
+			if firstVisitedURL.Port() != "" { // firstVisitedURL.Host already has a port
+				firstVisitedURL.Host = firstVisitedURL.Hostname() + ":" + port
+			} else {
+				firstVisitedURL.Host += ":" + port
+			}
+		}
+	}
+	firstVisitedURL.Path = r.URL.Path
+	firstVisitedURL.RawPath = r.URL.RawPath
+	firstVisitedURL.RawQuery = r.URL.RawQuery
+	return firstVisitedURL, nil
+}
+
 
 // VerifyState gets the state from the cookie 'initState' saved. It also gets
 // the state from an http param and:

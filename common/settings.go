@@ -59,6 +59,7 @@ type Config struct {
 	SessionStoreRedisDB   int    `split_words:"true" default:"0" envconfig:"SESSION_STORE_REDIS_DB"`
 	SessionMaxAge         int    `split_words:"true" default:"86400"`
 	SessionSameSite       string `split_words:"true" default:"Lax"`
+	SessionDomain         string `split_words:"true" default:""`
 
 	// Site
 	ClientName          string            `split_words:"true" default:"AuthService"`
