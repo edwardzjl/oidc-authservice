@@ -33,6 +33,7 @@ spec:
                     # XXX: MUST be lowercase!
                     - exact: "authorization"
                     - exact: "cookie"
+                    - exact: "x-forwarded-for"
               authorization_response:
                 allowed_upstream_headers:
                   patterns:
